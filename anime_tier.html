@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link href=”https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css” rel=”stylesheet”> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" type="text/css" />```
     <title>Interactive Tiermaker</title>
     <style>
         body {
@@ -102,7 +104,56 @@
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
         }
+        .settings-control {
+            
+            display: flex;
+            width: 100px;
+            height: 100px;
+            position: relative;
+            /* background: #ccc; */
 
+        }
+        .settings {
+            width: 50px;
+            height: 100px;
+            position: relative;
+            background-position: center;
+            align-items: center;
+            display: flex;
+            font-size: 30px;
+            justify-content: center;
+            align-items: center;
+            /* background: red; */
+        }
+        .move-buttons {
+            width: 50px;
+            height: 100px;
+            position: relative;
+            flex-direction: column;
+            display: flex;
+            /* justify-content: center; */
+            /* align-items: center; */
+        }
+        .move-up {
+            
+            width: 50px;
+            height: 50px;
+            position: relative;
+            display: flex;
+            font-size: 30px;
+            justify-content: center;
+            align-items: center;
+        }
+        .move-down {
+            
+            width: 50px;
+            height: 50px;
+            position: relative;
+            display: flex;
+            font-size: 30px;
+            justify-content: center;
+            align-items: center;
+        }
         .add-tier-button,
         .output-button,
         .reset-button {
@@ -134,46 +185,6 @@
     <button id="fetchButton">Fetch Anime</button>
 
     <div class="tier-list">
-        <div class="tier-row" data-tier="S">
-            <div class="tier-label">
-                <h2 contenteditable="true">S</h2>
-            </div>
-            <div class="tier-images">
-                <!-- 画像がここにドラッグ＆ドロップされる -->
-            </div>
-        </div>
-        <div class="tier-row" data-tier="A">
-            <div class="tier-label">
-                <h2 contenteditable="true">A</h2>
-            </div>
-            <div class="tier-images">
-                <!-- 画像がここにドラッグ＆ドロップされる -->
-            </div>
-        </div>
-        <div class="tier-row" data-tier="B">
-            <div class="tier-label">
-                <h2 contenteditable="true">B</h2>
-            </div>
-            <div class="tier-images">
-                <!-- 画像がここにドラッグ＆ドロップされる -->
-            </div>
-        </div>
-        <div class="tier-row" data-tier="C">
-            <div class="tier-label">
-                <h2 contenteditable="true">C</h2>
-            </div>
-            <div class="tier-images">
-                <!-- 画像がここにドラッグ＆ドロップされる -->
-            </div>
-        </div>
-        <div class="tier-row" data-tier="D">
-            <div class="tier-label">
-                <h2 contenteditable="true">D</h2>
-            </div>
-            <div class="tier-images">
-                <!-- 画像がここにドラッグ＆ドロップされる -->
-            </div>
-        </div>
     </div>
 
     <button class="add-tier-button">Add Tier</button>
@@ -187,6 +198,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script>
+        function initialize() {
+            const seasonYearInput = document.getElementById("seasonYear");
+            const seasonInput = document.getElementById("season");
+            const today = new Date();
+            
+            // 年と季節を現在時刻に合わせて今の時期にする
+            seasonYearInput.value = today.getFullYear();
+            let options = seasonInput.options;
+            options[Math.ceil((today.getMonth() + 1) / 3) - 1].selected = true;
+        }
         function createTierRow(tierName) {
             // Create the main container div
             const tierRow = document.createElement('div');
@@ -209,6 +230,28 @@
             const tierImages = document.createElement('div');
             tierImages.className = 'tier-images';
             tierImages.innerHTML = '<!-- 画像がここにドラッグ＆ドロップされる -->';
+            const settingsControl = document.createElement('div');
+            settingsControl.className = 'settings-control'
+
+            const settings = document.createElement('div');
+            settings.className = 'settings fa-solid fa-gear';
+            settingsControl.appendChild(settings);
+
+            const moveButtons = document.createElement('div');
+            moveButtons.className = 'move-buttons';
+
+            const moveUp = document.createElement('div');
+            moveUp.className = 'move-up fa-solid fa-chevron-up';
+
+            const moveDown = document.createElement('div');
+            moveDown.className = 'move-down fa-solid fa-chevron-down';
+            
+            moveButtons.appendChild(moveUp);
+            moveButtons.appendChild(moveDown);
+
+            settingsControl.appendChild(moveButtons);
+
+
             // drag and drop
             Sortable.create(tierImages, {
                 group: "shared", animation: 150,
@@ -216,7 +259,8 @@
             // Append the label and images divs to the main container
             tierRow.appendChild(tierLabel);
             tierRow.appendChild(tierImages);
-
+            tierRow.appendChild(settingsControl);
+            
             return tierRow;
         }
         async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "medium") {
@@ -319,6 +363,12 @@
         document.addEventListener("DOMContentLoaded", function () {
             const imagePool = document.getElementById("imagePool");
             const tiers = document.querySelectorAll(".tier-images");
+            const tierList = document.querySelector('.tier-list');
+            const DEFAULT_TIERS = ['S', 'A', 'B', 'C', 'D']
+            for (tier of DEFAULT_TIERS) {
+                tierList.appendChild(createTierRow(tier));
+            }
+            initialize();
 
             tiers.forEach(tier => {
                 Sortable.create(tier, {
@@ -341,6 +391,9 @@
             //     }
             // });
 
+            document.querySelector(".move-up").addEventListener("click", (event) => {
+                console.log(event)
+            });
             // Output JSON functionality
             document.querySelector(".output-button").addEventListener("click", () => {
                 const seasonYear = document.getElementById("seasonYear").value;
@@ -366,6 +419,7 @@
                     md += '\n'
                 }
                 console.log(md);
+                // クリップボードにコピー
                 navigator.clipboard.writeText(md)
                     .then(() => {
                     })
