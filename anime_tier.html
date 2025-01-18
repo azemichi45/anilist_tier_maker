@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tiermaker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .tier-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tier-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-height: 90px;
+            min-width: 600px;
+            position: relative;
+        }
+
+        .tier-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            /* 横幅を固定 */
+            height: 100px;
+            /* 高さを固定 */
+            text-align: center;
+            border-right: 2px solid #ccc;
+            /* 縦線を追加 */
+            padding-right: 10px;
+            margin-right: 10px;
+        }
+
+        .tier-label h2 {
+            margin: 0;
+            cursor: text;
+        }
+
+        .tier-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0px;
+            /* flex-grow: 1; */
+            /* 残りの幅を占める */
+            justify-content: flex-start;
+            /* 左揃えに設定 */
+            align-items: center;
+            /* 垂直方向の中央揃え */
+            min-height: 70px;
+            /* 画像部分の高さを調整 */
+            min-width: 500px;
+        }
+
+        .image-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .tier-item {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: grab;
+            position: relative;
+        }
+
+        .tier-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tier-item:hover::after {
+            content: attr(data-title);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            text-align: center;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .add-tier-button,
+        .output-button,
+        .reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Interactive Tiermaker</h1>
+
+    <label for="seasonYear">Year: </label>
+    <input type="number" id="seasonYear" value="2024" min="2000" max="2100">
+
+    <label for="season">Season: </label>
+    <select id="season">
+        <option value="WINTER">Winter</option>
+        <option value="SPRING">Spring</option>
+        <option value="SUMMER">Summer</option>
+        <option value="FALL">Fall</option>
+    </select>
+
+    <button id="fetchButton">Fetch Anime</button>
+
+    <div class="tier-list">
+        <div class="tier-row" data-tier="S">
+            <div class="tier-label">
+                <h2 contenteditable="true">S</h2>
+            </div>
+            <div class="tier-images">
+                <!-- 画像がここにドラッグ＆ドロップされる -->
+            </div>
+        </div>
+        <div class="tier-row" data-tier="A">
+            <div class="tier-label">
+                <h2 contenteditable="true">A</h2>
+            </div>
+            <div class="tier-images">
+                <!-- 画像がここにドラッグ＆ドロップされる -->
+            </div>
+        </div>
+        <div class="tier-row" data-tier="B">
+            <div class="tier-label">
+                <h2 contenteditable="true">B</h2>
+            </div>
+            <div class="tier-images">
+                <!-- 画像がここにドラッグ＆ドロップされる -->
+            </div>
+        </div>
+        <div class="tier-row" data-tier="C">
+            <div class="tier-label">
+                <h2 contenteditable="true">C</h2>
+            </div>
+            <div class="tier-images">
+                <!-- 画像がここにドラッグ＆ドロップされる -->
+            </div>
+        </div>
+        <div class="tier-row" data-tier="D">
+            <div class="tier-label">
+                <h2 contenteditable="true">D</h2>
+            </div>
+            <div class="tier-images">
+                <!-- 画像がここにドラッグ＆ドロップされる -->
+            </div>
+        </div>
+    </div>
+
+    <button class="add-tier-button">Add Tier</button>
+    <button class="output-button">Output JSON</button>
+    <button class="reset-button" id="resetButton">Reset Tierlist</button>
+
+    <h2>Image Pool</h2>
+    <div class="image-pool" id="imagePool">
+        <!-- Images will be added dynamically -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        function createTierRow(tierName) {
+            // Create the main container div
+            const tierRow = document.createElement('div');
+            tierRow.className = 'tier-row';
+            tierRow.setAttribute('data-tier', tierName);
+
+            // Create the tier label div
+            const tierLabel = document.createElement('div');
+            tierLabel.className = 'tier-label';
+
+            // Create the h2 element and set attributes
+            const h2 = document.createElement('h2');
+            h2.contentEditable = 'true';
+            h2.textContent = tierName;
+
+            // Append h2 to the tier label
+            tierLabel.appendChild(h2);
+
+            // Create the tier images div
+            const tierImages = document.createElement('div');
+            tierImages.className = 'tier-images';
+            tierImages.innerHTML = '<!-- 画像がここにドラッグ＆ドロップされる -->';
+            // drag and drop
+            Sortable.create(tierImages, {
+                group: "shared", animation: 150,
+            });
+            // Append the label and images divs to the main container
+            tierRow.appendChild(tierLabel);
+            tierRow.appendChild(tierImages);
+
+            return tierRow;
+        }
+        async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "medium") {
+            const url = "https://graphql.anilist.co";
+            const query = `
+            query($page: Int, $season: MediaSeason, $seasonYear: Int, $format: MediaFormat) {
+                Page(page: $page, perPage: 50) {
+                    pageInfo {
+                        hasNextPage
+                    }
+                    media(season: $season, seasonYear: $seasonYear, format: $format, type: ANIME) {
+                        title {
+                            romaji
+                        }
+                        coverImage {
+                            large
+                            medium
+                        }
+                        siteUrl
+                    }
+                }
+            }`;
+
+            let allImages = [];
+            let hasNextPage = true;
+            let page = 1;
+
+            while (hasNextPage) {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        query,
+                        variables: {
+                            season,
+                            seasonYear,
+                            format: formatType,
+                            page,
+                        },
+                    }),
+                });
+
+                const data = await response.json();
+                const pageData = data.data.Page;
+                const images = pageData.media.map(media => ({
+                    siteUrl: media.siteUrl,
+                    title: media.title.romaji,
+                    imgUrl: media.coverImage[size],
+                    
+                }));
+
+                allImages = allImages.concat(images);
+                hasNextPage = pageData.pageInfo.hasNextPage;
+                page++;
+            }
+
+            return allImages;
+        }
+
+        document.getElementById("fetchButton").addEventListener("click", async () => {
+            resetTierlist();
+            const seasonYear = document.getElementById("seasonYear").value;
+            const season = document.getElementById("season").value;
+            const images = await getSeasonAnimeImageUrl(seasonYear, season, "TV");
+
+            const imagePool = document.getElementById("imagePool");
+            Sortable.create(imagePool, {
+                group: "shared", animation: 150,
+            });
+            imagePool.innerHTML = ""; // Clear existing images
+            images.forEach(data => {
+                const item = document.createElement("div");
+                item.classList.add("tier-item");
+                item.setAttribute("draggable", "true");
+                item.setAttribute("data-title", data.title);
+
+                const img = document.createElement("img");
+                img.src = data.imgUrl;
+                img.alt = data.title;
+                img.addEventListener("dblclick", () => {
+                    window.open(data.siteUrl, "_blank"); // 新しいタブで開く
+                });
+                item.appendChild(img);
+                imagePool.appendChild(item);
+
+                // // Add event listeners for drag and drop
+                // item.addEventListener("dragstart", () => {
+                //     item.classList.add("dragging");
+                // });
+
+                // item.addEventListener("dragend", () => {
+                //     item.classList.remove("dragging");
+                // });
+            });
+        });
+
+        // Drag and Drop functionality
+        document.addEventListener("DOMContentLoaded", function () {
+            const imagePool = document.getElementById("imagePool");
+            const tiers = document.querySelectorAll(".tier-images");
+
+            tiers.forEach(tier => {
+                Sortable.create(tier, {
+                    group: "shared", animation: 150,
+                });
+                // tier.addEventListener("dragover", e => {
+                //     e.preventDefault();
+                //     const draggable = document.querySelector(".dragging");
+                //     if (draggable) {
+                //         tier.appendChild(draggable);
+                //     }
+                // });
+            });
+
+            // imagePool.addEventListener("dragover", e => {
+            //     e.preventDefault();
+            //     const draggable = document.querySelector(".dragging");
+            //     if (draggable) {
+            //         imagePool.appendChild(draggable);
+            //     }
+            // });
+
+            // Output JSON functionality
+            document.querySelector(".output-button").addEventListener("click", () => {
+                const seasonYear = document.getElementById("seasonYear").value;
+                const season = document.getElementById("season").value;
+                const output = {};
+                let md = "";
+                document.querySelectorAll(".tier-row").forEach(row => {
+                    const tierName = row.querySelector("h2").textContent.trim();
+                    const images = Array.from(row.querySelectorAll(".tier-item img")).map(img => img.src);
+                    output[tierName] = images;
+
+                });
+                md += `# ~~~${seasonYear} ${season} Anime Tier List~~~\n`
+                for (const property in output) {
+                    if (output[property].length === 0) {
+                        continue;
+                    }
+                    md += `## ~~~${property}~~~\n`
+                    for (const url of output[property]) {
+
+                        md += `![img](${url})`
+                    }
+                    md += '\n'
+                }
+                console.log(md);
+                navigator.clipboard.writeText(md)
+                    .then(() => {
+                    })
+                    .catch(err => {
+                        console.error("クリップボードへのコピーに失敗しました: ", err);
+                    });
+            });
+
+
+            document.querySelector(".add-tier-button").addEventListener("click", () => {
+                const tierList = document.querySelector(".tier-list");
+
+                // 新しいティア行を作成
+                const newTierRow = createTierRow("NEW Tier")
+                // 新しいティア行をティアリストに追加
+                tierList.appendChild(newTierRow);
+
+            });
+            // Reset Tierlist functionality
+            document.getElementById("resetButton").addEventListener("click", resetTierlist);
+        });
+
+        function resetTierlist() {
+            const imagePool = document.getElementById("imagePool");
+            document.querySelectorAll(".tier-row .tier-item").forEach(item => {
+                imagePool.appendChild(item);
+            });
+        }
+    </script>
+</body>
+
+</html>
