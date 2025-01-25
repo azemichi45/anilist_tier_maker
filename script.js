@@ -11,7 +11,7 @@ function initialize() {
     let options = seasonInput.options;
     options[Math.ceil((today.getMonth() + 1) / 3) - 1].selected = true;
     
-    
+    // モーダルウィンドウの閉じる機能作成
     // 設定画面を閉じる
     closeSettingsButton.addEventListener('click', () => {
         settingsModal.style.display = 'none'; // モーダルを非表示
@@ -52,9 +52,11 @@ function createTierRow(tierName) {
     const settingsControl = document.createElement('div');
     settingsControl.className = 'settings-control'
 
+    // 設定ボタン
     const settings = document.createElement('div');
     settings.className = 'settings fa-solid fa-gear';
     settings.addEventListener('click', () => {
+        // 設定ボタンのモーダルウィンドウの機能実装
         const settingsModal = document.getElementById('settings-modal');
         const deleteRowButton = document.getElementById('delete-row-button');
         const clearRowButton = document.getElementById('clear-row-button');
@@ -62,6 +64,7 @@ function createTierRow(tierName) {
         const addRowBelowButton = document.getElementById('add-row-below-button');
         const currentRow = settings.closest('.tier-row');
         
+        // delete Row Button
         deleteRowButton.onclick = () => {
 
             const imagePool = document.getElementById("imagePool");
@@ -72,6 +75,7 @@ function createTierRow(tierName) {
             settingsModal.style.display = 'none';
         };
 
+        // clear row image button
         clearRowButton.onclick = () => {
 
             const imagePool = document.getElementById("imagePool");
@@ -81,6 +85,8 @@ function createTierRow(tierName) {
             });
             settingsModal.style.display = 'none';
         };
+
+        // add row above button
         addRowAboveButton.onclick = () => {
             const tierList = currentRow.parentNode; // 親要素（tier-list）
 
@@ -88,6 +94,8 @@ function createTierRow(tierName) {
             tierList.insertBefore(newTierRow, currentRow);
             settingsModal.style.display = 'none';
         };
+        
+        // add row below button
         addRowBelowButton.onclick = () => {
             const tierList = currentRow.parentNode; // 親要素（tier-list）
             const nextRow = currentRow.nextElementSibling; // 現在の行の次の行
@@ -99,8 +107,9 @@ function createTierRow(tierName) {
             }
             settingsModal.style.display = 'none';
         };
+        
+        // モーダルウィンドウ表示
         settingsModal.style.display = 'flex';
-        console.log("clicked setting button");
 
     });
     settingsControl.appendChild(settings);
@@ -224,6 +233,7 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "me
 
 document.getElementById("fetchButton").addEventListener("click", async () => {
     resetTierlist();
+
     const seasonYear = document.getElementById("seasonYear").value;
     const season = document.getElementById("season").value;
     const images = await getSeasonAnimeImageUrl(seasonYear, season, "TV");
@@ -252,9 +262,8 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
     });
 });
 
-// Drag and Drop functionality
 document.addEventListener("DOMContentLoaded", function () {
-    const imagePool = document.getElementById("imagePool");
+    // 初期tierの作成
     const tiers = document.querySelectorAll(".tier-images");
     const tierList = document.querySelector('.tier-list');
     const DEFAULT_TIERS = ['S', 'A', 'B', 'C', 'D']
