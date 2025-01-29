@@ -157,6 +157,9 @@ body {
     cursor: pointer;
 }
 
+#no-results {
+    display: none;
+}
 /* モーダルのスタイル */
 .modal {
     display: none; /* 初期状態では非表示 */

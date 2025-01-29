@@ -14,7 +14,8 @@
     <h1>Anime Tiermaker</h1>
 
     <label for="seasonYear">Year: </label>
-    <input type="number" id="seasonYear" value="2024" min="2000" max="2100">
+    <!-- TODO: とりあえず決め打ちでアニリスのminとmaxを手打ちで年数入れてるけど動的に設定するようにする -->
+    <input type="number" id="seasonYear" value="2024" min="1940" max="2026">
 
     <label for="season">Season: </label>
     <select id="season">
@@ -23,13 +24,23 @@
         <option value="SUMMER">Summer</option>
         <option value="FALL">Fall</option>
     </select>
+    <!-- 次バージョン用、一旦コメントアウト -->
+    <!-- <label for="format">Format: </label>
+    <select id="format">
+        <option value="TV Show">TV Show</option>
+        <option value="Movie">Movie</option>
+        <option value="TV Short">TV Short</option>
+        <option value="Special">Special</option>
+        <option value="OVA">OVA</option>
+        <option value="ONA">ONA</option>
+        <option value="Music">Music</option>
+    </select> -->
 
     <button id="fetchButton">Fetch Anime</button>
 
     <div class="tier-list">
     </div>
 
-    <button class="add-tier-button">Add Tier</button>
     <button class="output-button">Copy Mark Down</button>
     <button class="reset-button" id="resetButton">Reset Tierlist</button>
 
@@ -38,6 +49,7 @@
         <!-- Images will be added dynamically -->
     </div>
 
+    <h3 id="no-results">No Results</h3>
     <!-- モーダルウィンドウ -->
     <div class="modal" id="settings-modal">
         <div class="modal-content">
