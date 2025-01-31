@@ -171,15 +171,18 @@ function createTierRow(tierName) {
 
     return tierRow;
 }
-async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "medium") {
+async function getSeasonAnimeImageUrl(seasonYear, season, formatType, previous = false) {
     const url = "https://graphql.anilist.co";
+    const episodes_greater = 23
+    // $マークがqueryのキーとjavascriptの文字列埋め込みでかぶっててわかりにくい
+    // {}の手前は文字列埋め込みの記号
     const query = `
-    query($page: Int, $season: MediaSeason, $seasonYear: Int, $format: MediaFormat) {
+    query($page: Int, $season: MediaSeason, $seasonYear: Int, $format: [MediaFormat] ${previous ? ', $episodes_greater: Int' : ''}) {
         Page(page: $page, perPage: 50) {
             pageInfo {
                 hasNextPage
             }
-            media(season: $season, seasonYear: $seasonYear, format: $format, type: ANIME) {
+            media(season: $season, seasonYear: $seasonYear, format_in: $format, type: ANIME, ${previous ? ', episodes_greater: $episodes_greater' : ''}) {
                 title {
                     romaji
                 }
@@ -187,6 +190,10 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "me
                     large
                     medium
                 }
+                duration
+                episodes
+                season
+                seasonYear
                 siteUrl
             }
         }
@@ -208,6 +215,7 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "me
                     season,
                     seasonYear,
                     format: formatType,
+                    episodes_greater: episodes_greater,
                     page,
                 },
             }),
@@ -215,12 +223,13 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "me
 
         const data = await response.json();
         const pageData = data.data.Page;
-        const images = pageData.media.map(media => ({
-            siteUrl: media.siteUrl,
-            title: media.title.romaji,
-            imgUrl: media.coverImage[size],
-
-        }));
+        const images = pageData.media
+            .filter(media => media.duration === null || media.duration > 7) // 明確なショートアニメを除外
+            .map(media => ({
+                siteUrl: media.siteUrl,
+                title: media.title.romaji,
+                imgUrl: media.coverImage["medium"],
+            }));
 
         allImages = allImages.concat(images);
         hasNextPage = pageData.pageInfo.hasNextPage;
@@ -233,12 +242,31 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, size = "me
 document.getElementById("fetchButton").addEventListener("click", async () => {
     resetTierlist();
 
-    const seasonYear = document.getElementById("seasonYear").value;
-    const season = document.getElementById("season").value;
-    const images = await getSeasonAnimeImageUrl(seasonYear, season, "TV");
+    const seasonYearInput = document.getElementById("seasonYear");
+    const seasonSelect = document.getElementById("season");
+
+    const optionsArray = Array.from(seasonSelect.options).map(option => option.value);
+    const seasonYear = seasonYearInput.value;
+    const season = seasonSelect.value;
+    const includePreviousSeasonCheckBox = document.getElementById("include-previous-season");
     const noResults = document.getElementById("no-results");
     const imagePool = document.getElementById("imagePool");
 
+    let images = await getSeasonAnimeImageUrl(seasonYear, season, ["TV", "ONA"]);
+    console.log(images);
+    if (includePreviousSeasonCheckBox.checked) {
+        const seasonIndex = seasonSelect.selectedIndex;
+        const previousSeasonIndex = (seasonIndex - 1 + optionsArray.length) % optionsArray.length;
+        const previousSeason = optionsArray[previousSeasonIndex];
+        let previousSeasonYear = seasonYear;
+        if (seasonIndex === 0) {
+            previousSeasonYear -= 1;
+        }
+        const previousSeasonAnime = await getSeasonAnimeImageUrl(previousSeasonYear, previousSeason, ["TV", "ONA"], true);
+
+        images = [...images, ...previousSeasonAnime]
+
+    }
     Sortable.create(imagePool, {
         group: "shared", animation: 150,
     });
