@@ -25,6 +25,7 @@ function initialize() {
     });
 }
 
+
 function createTierRow(tierName) {
     // Create the main container div
     const tierRow = document.createElement('div');
@@ -279,7 +280,6 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
     else {
         noResults.style.display = 'flex';
     }
-
     images.forEach(data => {
         const item = document.createElement("div");
         item.classList.add("tier-item");
@@ -356,17 +356,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    // document.querySelector(".add-tier-button").addEventListener("click", () => {
-    //     const tierList = document.querySelector(".tier-list");
-    //
-    //     // 新しいティア行を作成
-    //     const newTierRow = createTierRow("NEW")
-    //     // 新しいティア行をティアリストに追加
-    //     tierList.appendChild(newTierRow);
-    //
+    // document.querySelector(".download-button").addEventListener("click", () => {
+    //     // html2canvasで指定した要素をキャプチャ
+    //     modernScreenshot.domToPng(document.getElementById("tierlist")).then(dataUrl => {
+    //         const link = document.createElement('a')
+    //         link.download = 'screenshot.png'
+    //         link.href = dataUrl
+    //         link.click()
+    //     })
     // });
     // Reset Tierlist functionality
     document.getElementById("resetButton").addEventListener("click", resetTierlist);
+    document.getElementById("pin-toggle").addEventListener("click", () => {
+        console.log("clicked pin images")
+        const imageControls = document.getElementById("imageControls");
+        const pinToggle = document.getElementById("pin-toggle");
+
+        // imagePool.classList.remove(".image-pool");
+        imageControls.classList.toggle("image-controls-pin");
+        if (imageControls.classList.contains("image-controls-pin")) {
+            pinToggle.innerText = "📌 Unpin Images"
+        }
+        else {
+            
+            pinToggle.innerText = "📌 Pin Images"
+        }
+
+
+    });
 });
 
 function resetTierlist() {

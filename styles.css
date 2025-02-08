@@ -65,6 +65,15 @@ body {
     margin-top: 20px;
 }
 
+.image-controls-pin {
+    position: fixed;
+    top: 70%;
+    bottom: 0;
+    overflow-y: auto;
+}
+#pin-toggle {
+    cursor: pointer;
+}
 .tier-item {
     width: 100px;
     height: 100px;
@@ -147,6 +156,7 @@ body {
 }
 .add-tier-button,
 .output-button,
+.download-button,
 .reset-button {
     margin-top: 20px;
     padding: 10px 20px;
