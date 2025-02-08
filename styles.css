@@ -47,15 +47,11 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 0px;
-    /* flex-grow: 1; */
-    /* 残りの幅を占める */
     justify-content: flex-start;
-    /* 左揃えに設定 */
     align-items: center;
-    /* 垂直方向の中央揃え */
-    min-height: 70px;
     /* 画像部分の高さを調整 */
-    min-width: 500px;
+    min-height: 70px;
+    width: 840px;
 }
 
 .image-pool {
