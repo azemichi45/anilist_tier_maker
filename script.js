@@ -23,8 +23,8 @@ function initialize() {
             settingsModal.style.display = 'none';
         }
     });
-
     initTierList();
+    initCopyMdButton();
 }
 
 function initTierList() {
@@ -44,17 +44,52 @@ function initTierList() {
     });
 }
 
+function initCopyMdButton() {
+    const copyMdButton = document.querySelector(".output-button");
+    // ボタンの初期テキストと背景色を保存しておく
+    const originalText = copyMdButton.textContent;
+    const originalBackgroundColor = copyMdButton.style.backgroundColor;
+
+    // floatをキャストするせいでボタンが改行されるので1を足す
+    const originalWidth = copyMdButton.offsetWidth + 1;
+    copyMdButton.style.width = originalWidth + "px";
+    // Output JSON functionality
+    copyMdButton.addEventListener("click", () => {
+        const seasonYear = document.getElementById("seasonYear").value;
+        const season = document.getElementById("season").value;
+
+        const md = generateMarkdown(seasonYear, season);
+
+        console.log(md);
+        // クリップボードにコピー
+        navigator.clipboard.writeText(md)
+            .then(() => {
+                // コピー成功時にボタンの状態を更新
+                copyMdButton.textContent = "Copied!";
+                copyMdButton.style.backgroundColor = "green";
+
+                // 1秒後に元の状態に戻す
+                setTimeout(() => {
+                    copyMdButton.textContent = originalText;
+                    copyMdButton.style.backgroundColor = originalBackgroundColor;
+                }, 750);
+            })
+            .catch(err => {
+                console.error("クリップボードへのコピーに失敗しました: ", err);
+            });
+    });
+}
 function generateMarkdown(seasonYear, season) {
     const output = {};
     let md = `# ~~~${seasonYear} ${season} Anime Tier List~~~\n`;
-    
+
     // tierlistのデータをobjectに変換
     document.querySelectorAll(".tier-row").forEach(row => {
         const tierName = row.querySelector("h2").textContent.trim();
         const animes = Array.from(row.querySelectorAll(".tier-item img")).map(img => img.customData);
         output[tierName] = animes;
     });
-    
+
     // md作成
     for (const tier in output) {
         if (output[tier].length === 0) continue;
@@ -392,25 +427,8 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-
     initialize();
 
-    // Output JSON functionality
-    document.querySelector(".output-button").addEventListener("click", () => {
-        const seasonYear = document.getElementById("seasonYear").value;
-        const season = document.getElementById("season").value;
-
-        const md = generateMarkdown(seasonYear, season);
-
-        console.log(md);
-        // クリップボードにコピー
-        navigator.clipboard.writeText(md)
-            .then(() => {
-            })
-            .catch(err => {
-                console.error("クリップボードへのコピーに失敗しました: ", err);
-            });
-    });
 
 
     // document.querySelector(".download-button").addEventListener("click", () => {
@@ -424,7 +442,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // });
     // Reset Tierlist functionality
     document.getElementById("resetButton").addEventListener("click", resetTierlist);
-    
+
     // pin images toggle function
     document.getElementById("pin-toggle").addEventListener("click", () => {
         const imageControls = document.getElementById("imageControls");
