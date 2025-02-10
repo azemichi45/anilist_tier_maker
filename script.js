@@ -23,149 +23,237 @@ function initialize() {
             settingsModal.style.display = 'none';
         }
     });
+
+    initTierList();
 }
 
+function initTierList() {
 
-function createTierRow(tierName) {
-    // Create the main container div
-    const tierRow = document.createElement('div');
-    tierRow.className = 'tier-row';
-    tierRow.setAttribute('data-tier', tierName);
+    // 初期tierの作成
+    const tiers = document.querySelectorAll(".tier-images");
+    const tierList = document.querySelector('.tier-list');
+    const DEFAULT_TIERS = ['S', 'A', 'B', 'C', 'D'];
+    for (tier of DEFAULT_TIERS) {
+        tierList.appendChild(createTierRow(tier));
+    }
 
-    // Create the tier label div
+    tiers.forEach(tier => {
+        Sortable.create(tier, {
+            group: "shared", animation: 150,
+        });
+    });
+}
+
+function generateMarkdown(seasonYear, season) {
+    const output = {};
+    let md = `# ~~~${seasonYear} ${season} Anime Tier List~~~\n`;
+    
+    // tierlistのデータをobjectに変換
+    document.querySelectorAll(".tier-row").forEach(row => {
+        const tierName = row.querySelector("h2").textContent.trim();
+        const animes = Array.from(row.querySelectorAll(".tier-item img")).map(img => img.customData);
+        output[tierName] = animes;
+    });
+    
+    // md作成
+    for (const tier in output) {
+        if (output[tier].length === 0) continue;
+        md += `## ~~~${tier}~~~\n`;
+        for (const data of output[tier]) {
+            md += `[![${data.title}](${data.imgUrl} "${data.title}")](${data.siteUrl})`;
+        }
+        md += '\n';
+    }
+    return md;
+}
+/**
+ * タイアルの見出し部分（ラベル：h2）を作成する関数
+ * @param {string} tierName - タイアルの名称
+ * @returns {HTMLElement} タイアルラベルの要素
+ */
+function createTierLabel(tierName) {
     const tierLabel = document.createElement('div');
     tierLabel.className = 'tier-label';
-
-    // Create the h2 element and set attributes
     const h2 = document.createElement('h2');
     h2.contentEditable = 'true';
     h2.textContent = tierName;
-
-    // Append h2 to the tier label
     tierLabel.appendChild(h2);
+    return tierLabel;
+}
 
-    // Create the tier images div
+/**
+ * タイアルの画像表示部分のコンテナを作成する関数
+ * @returns {HTMLElement} タイアル画像コンテナの要素
+ */
+function createTierImages() {
     const tierImages = document.createElement('div');
     tierImages.className = 'tier-images';
     tierImages.innerHTML = '<!-- 画像がここにドラッグ＆ドロップされる -->';
+    // ドラッグ＆ドロップのためにSortableを初期化
+    Sortable.create(tierImages, { group: "shared", animation: 150 });
+    return tierImages;
+}
 
-    // Create setting control
-    const settingsControl = document.createElement('div');
-    settingsControl.className = 'settings-control'
+/**
+ * 設定ボタンのクリック時の処理（モーダルウィンドウを表示し各種操作を設定）を行う関数
+ * @param {HTMLElement} settings - 設定ボタンの要素
+ */
+function handleSettingsButtonClick(settings) {
+    const settingsModal = document.getElementById('settings-modal');
+    const deleteRowButton = document.getElementById('delete-row-button');
+    const clearRowButton = document.getElementById('clear-row-button');
+    const addRowAboveButton = document.getElementById('add-row-above-button');
+    const addRowBelowButton = document.getElementById('add-row-below-button');
+    const currentRow = settings.closest('.tier-row');
 
-    // 設定ボタン
+    // 削除ボタンの処理
+    deleteRowButton.onclick = () => {
+        const imagePool = document.getElementById("imagePool");
+        currentRow.querySelectorAll(".tier-item").forEach(item => {
+            imagePool.appendChild(item);
+        });
+        currentRow.remove();
+        settingsModal.style.display = 'none';
+    };
+
+    // 行クリアボタンの処理
+    clearRowButton.onclick = () => {
+        const imagePool = document.getElementById("imagePool");
+        currentRow.querySelectorAll(".tier-item").forEach(item => {
+            imagePool.appendChild(item);
+        });
+        settingsModal.style.display = 'none';
+    };
+
+    // 行の上に新規行追加ボタンの処理
+    addRowAboveButton.onclick = () => {
+        const tierList = currentRow.parentNode; // 親要素（tier-list）
+        const newTierRow = createTierRow("NEW"); // 新しい行を作成
+        tierList.insertBefore(newTierRow, currentRow);
+        settingsModal.style.display = 'none';
+    };
+
+    // 行の下に新規行追加ボタンの処理
+    addRowBelowButton.onclick = () => {
+        const tierList = currentRow.parentNode;
+        const nextRow = currentRow.nextElementSibling;
+        const newTierRow = createTierRow("NEW");
+        if (nextRow) {
+            tierList.insertBefore(newTierRow, nextRow);
+        } else {
+            tierList.appendChild(newTierRow);
+        }
+        settingsModal.style.display = 'none';
+    };
+
+    // モーダルウィンドウを表示
+    settingsModal.style.display = 'flex';
+}
+
+/**
+ * 設定ボタン自体の要素を作成し、クリック時のイベントを登録する関数
+ * @returns {HTMLElement} 設定ボタンの要素
+ */
+function createSettingsButton() {
     const settings = document.createElement('div');
     settings.className = 'settings fa-solid fa-gear';
     settings.addEventListener('click', () => {
-        // 設定ボタンのモーダルウィンドウの機能実装
-        const settingsModal = document.getElementById('settings-modal');
-        const deleteRowButton = document.getElementById('delete-row-button');
-        const clearRowButton = document.getElementById('clear-row-button');
-        const addRowAboveButton = document.getElementById('add-row-above-button');
-        const addRowBelowButton = document.getElementById('add-row-below-button');
-        const currentRow = settings.closest('.tier-row');
-
-        // delete Row Button
-        deleteRowButton.onclick = () => {
-
-            const imagePool = document.getElementById("imagePool");
-            currentRow.querySelectorAll(".tier-item").forEach(item => {
-                imagePool.appendChild(item);
-            });
-            currentRow.remove();
-            settingsModal.style.display = 'none';
-        };
-
-        // clear row image button
-        clearRowButton.onclick = () => {
-
-            const imagePool = document.getElementById("imagePool");
-            currentRow.querySelectorAll(".tier-item").forEach(item => {
-                imagePool.appendChild(item);
-            });
-            settingsModal.style.display = 'none';
-        };
-
-        // add row above button
-        addRowAboveButton.onclick = () => {
-            const tierList = currentRow.parentNode; // 親要素（tier-list）
-
-            const newTierRow = createTierRow("NEW"); // 新しい行を作成
-            tierList.insertBefore(newTierRow, currentRow);
-            settingsModal.style.display = 'none';
-        };
-
-        // add row below button
-        addRowBelowButton.onclick = () => {
-            const tierList = currentRow.parentNode; // 親要素（tier-list）
-            const nextRow = currentRow.nextElementSibling; // 現在の行の次の行
-            const newTierRow = createTierRow("NEW"); // 新しい行を作成
-            if (nextRow) {
-                tierList.insertBefore(newTierRow, nextRow); // 次の行の前に挿入
-            } else {
-                tierList.appendChild(newTierRow); // 次の行がない場合は末尾に追加
-            }
-            settingsModal.style.display = 'none';
-        };
-
-        // モーダルウィンドウ表示
-        settingsModal.style.display = 'flex';
-
+        handleSettingsButtonClick(settings);
     });
-    settingsControl.appendChild(settings);
+    return settings;
+}
 
-    // Create move buttons
+/**
+ * 「上へ移動」「下へ移動」ボタンのコンテナを作成する関数
+ * @returns {HTMLElement} 移動ボタン群の要素
+ */
+function createMoveButtons() {
     const moveButtons = document.createElement('div');
     moveButtons.className = 'move-buttons';
 
     const moveUp = document.createElement('div');
     moveUp.className = 'move-up fa-solid fa-chevron-up';
     moveUp.addEventListener('click', () => {
-        // 現在の tier-row を取得
-        const currentRow = moveUp.closest('.tier-row');
-
-        // 一つ上の tier-row を取得
-        const previousRow = currentRow.previousElementSibling;
-
-        // 一つ上の行が存在する場合のみ処理
-        if (previousRow) {
-            // 親要素を取得
-            const parent = currentRow.parentNode;
-
-            // 現在の行を一つ上の行の前に移動
-            parent.insertBefore(currentRow, previousRow);
-
-            console.log(`Moved row ${currentRow.dataset.tier} above ${previousRow.dataset.tier}`);
-        } else {
-            console.log('No row above to swap with.');
-        }
+        handleMoveUpClick(moveUp);
     });
+
     const moveDown = document.createElement('div');
     moveDown.className = 'move-down fa-solid fa-chevron-down';
-
     moveDown.addEventListener('click', () => {
-        const currentRow = moveDown.closest('.tier-row');
-        const nextRow = currentRow.nextElementSibling;
-
-        if (nextRow) {
-            const parent = currentRow.parentNode;
-            parent.insertBefore(nextRow, currentRow); // 次の行を現在の行の前に移動
-            console.log(`Moved row ${currentRow.dataset.tier} below ${nextRow.dataset.tier}`);
-        } else {
-            console.log('No row below to swap with.');
-        }
+        handleMoveDownClick(moveDown);
     });
+
     moveButtons.appendChild(moveUp);
     moveButtons.appendChild(moveDown);
+    return moveButtons;
+}
 
+/**
+ * 上移動ボタンのクリックイベント処理
+ * @param {HTMLElement} moveUp - 上移動ボタンの要素
+ */
+function handleMoveUpClick(moveUp) {
+    const currentRow = moveUp.closest('.tier-row');
+    const previousRow = currentRow.previousElementSibling;
+    if (previousRow) {
+        const parent = currentRow.parentNode;
+        parent.insertBefore(currentRow, previousRow);
+        console.log(`Moved row ${currentRow.dataset.tier} above ${previousRow.dataset.tier}`);
+    } else {
+        console.log('No row above to swap with.');
+    }
+}
+
+/**
+ * 下移動ボタンのクリックイベント処理
+ * @param {HTMLElement} moveDown - 下移動ボタンの要素
+ */
+function handleMoveDownClick(moveDown) {
+    const currentRow = moveDown.closest('.tier-row');
+    const nextRow = currentRow.nextElementSibling;
+    if (nextRow) {
+        const parent = currentRow.parentNode;
+        parent.insertBefore(nextRow, currentRow);
+        console.log(`Moved row ${currentRow.dataset.tier} below ${nextRow.dataset.tier}`);
+    } else {
+        console.log('No row below to swap with.');
+    }
+}
+
+/**
+ * 設定コントロール（設定ボタン＋移動ボタン）のコンテナを作成する関数
+ * @returns {HTMLElement} 設定コントロールの要素
+ */
+function createSettingsControl() {
+    const settingsControl = document.createElement('div');
+    settingsControl.className = 'settings-control';
+
+    const settingsButton = createSettingsButton();
+    settingsControl.appendChild(settingsButton);
+
+    const moveButtons = createMoveButtons();
     settingsControl.appendChild(moveButtons);
 
+    return settingsControl;
+}
 
-    // drag and drop
-    Sortable.create(tierImages, {
-        group: "shared", animation: 150,
-    });
-    // Append the label and images divs to the main container
+/**
+ * タイアルの1行（ラベル、画像コンテナ、設定コントロール）を作成するメイン関数
+ * @param {string} tierName - タイアルの名称
+ * @returns {HTMLElement} 完成したタイアル行の要素
+ */
+function createTierRow(tierName) {
+    // メインのコンテナを作成
+    const tierRow = document.createElement('div');
+    tierRow.className = 'tier-row';
+    tierRow.setAttribute('data-tier', tierName);
+
+    // 各部分の作成
+    const tierLabel = createTierLabel(tierName);
+    const tierImages = createTierImages();
+    const settingsControl = createSettingsControl();
+
+    // 作成した要素を順に追加
     tierRow.appendChild(tierLabel);
     tierRow.appendChild(tierImages);
     tierRow.appendChild(settingsControl);
@@ -241,7 +329,6 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, previous =
 }
 
 document.getElementById("fetchButton").addEventListener("click", async () => {
-    resetTierlist();
 
     const seasonYearInput = document.getElementById("seasonYear");
     const seasonSelect = document.getElementById("season");
@@ -253,8 +340,11 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
     const noResults = document.getElementById("no-results");
     const imagePool = document.getElementById("imagePool");
 
+    resetTierlist();
+
     let images = await getSeasonAnimeImageUrl(seasonYear, season, ["TV", "ONA"]);
-    console.log(images);
+
+    // 前記の2クールアニメを含める場合、該当するアニメを追加
     if (includePreviousSeasonCheckBox.checked) {
         const seasonIndex = seasonSelect.selectedIndex;
         const previousSeasonIndex = (seasonIndex - 1 + optionsArray.length) % optionsArray.length;
@@ -280,6 +370,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
     else {
         noResults.style.display = 'flex';
     }
+    // 取得した画像データをhtml上に配置
     images.forEach(data => {
         const item = document.createElement("div");
         item.classList.add("tier-item");
@@ -301,50 +392,16 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    // 初期tierの作成
-    const tiers = document.querySelectorAll(".tier-images");
-    const tierList = document.querySelector('.tier-list');
-    const DEFAULT_TIERS = ['S', 'A', 'B', 'C', 'D']
-    for (tier of DEFAULT_TIERS) {
-        tierList.appendChild(createTierRow(tier));
-    }
+
     initialize();
-
-    tiers.forEach(tier => {
-        Sortable.create(tier, {
-            group: "shared", animation: 150,
-        });
-    });
-
 
     // Output JSON functionality
     document.querySelector(".output-button").addEventListener("click", () => {
         const seasonYear = document.getElementById("seasonYear").value;
         const season = document.getElementById("season").value;
-        const output = {};
-        let md = "";
-        // tier-rowの現在の状態をjsonに変換
-        document.querySelectorAll(".tier-row").forEach(row => {
-            const tierName = row.querySelector("h2").textContent.trim();
-            const animes = Array.from(row.querySelectorAll(".tier-item img")).map(img => img.customData);
-            output[tierName] = animes;
 
-        });
-        md += `# ~~~${seasonYear} ${season} Anime Tier List~~~\n`
+        const md = generateMarkdown(seasonYear, season);
 
-        for (const property in output) {
-            // 空のtierは書かない
-            if (output[property].length === 0) {
-                continue;
-            }
-            // tier名書き込み
-            md += `## ~~~${property}~~~\n`
-            for (const data of output[property]) {
-                // mdに画像を書き込み
-                md += `[![${data.title}](${data.imgUrl} "${data.title}")](${data.siteUrl})`;
-            }
-            md += '\n'
-        }
         console.log(md);
         // クリップボードにコピー
         navigator.clipboard.writeText(md)
@@ -367,22 +424,21 @@ document.addEventListener("DOMContentLoaded", function () {
     // });
     // Reset Tierlist functionality
     document.getElementById("resetButton").addEventListener("click", resetTierlist);
+    
+    // pin images toggle function
     document.getElementById("pin-toggle").addEventListener("click", () => {
-        console.log("clicked pin images")
         const imageControls = document.getElementById("imageControls");
         const pinToggle = document.getElementById("pin-toggle");
 
-        // imagePool.classList.remove(".image-pool");
+        // classの付け替えでアニメ画像の位置を変更
         imageControls.classList.toggle("image-controls-pin");
+
         if (imageControls.classList.contains("image-controls-pin")) {
-            pinToggle.innerText = "📌 Unpin Images"
+            pinToggle.innerText = "📌 Unpin Images";
         }
         else {
-            
-            pinToggle.innerText = "📌 Pin Images"
+            pinToggle.innerText = "📌 Pin Images";
         }
-
-
     });
 });
 
