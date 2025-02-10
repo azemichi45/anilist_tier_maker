@@ -47,15 +47,11 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 0px;
-    /* flex-grow: 1; */
-    /* 残りの幅を占める */
     justify-content: flex-start;
-    /* 左揃えに設定 */
     align-items: center;
-    /* 垂直方向の中央揃え */
-    min-height: 70px;
     /* 画像部分の高さを調整 */
-    min-width: 500px;
+    min-height: 70px;
+    width: 840px;
 }
 
 .image-pool {
@@ -65,6 +61,15 @@ body {
     margin-top: 20px;
 }
 
+.image-controls-pin {
+    position: fixed;
+    top: 70%;
+    bottom: 0;
+    overflow-y: auto;
+}
+#pin-toggle {
+    cursor: pointer;
+}
 .tier-item {
     width: 100px;
     height: 100px;
@@ -147,6 +152,7 @@ body {
 }
 .add-tier-button,
 .output-button,
+.download-button,
 .reset-button {
     margin-top: 20px;
     padding: 10px 20px;
