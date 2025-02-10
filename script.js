@@ -429,8 +429,6 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
 document.addEventListener("DOMContentLoaded", function () {
     initialize();
 
-
-
     // document.querySelector(".download-button").addEventListener("click", () => {
     //     // html2canvasで指定した要素をキャプチャ
     //     modernScreenshot.domToPng(document.getElementById("tierlist")).then(dataUrl => {
@@ -451,11 +449,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // classの付け替えでアニメ画像の位置を変更
         imageControls.classList.toggle("image-controls-pin");
 
+        // 下段の余白を追加
+        const height = imageControls.offsetHeight; // 要素の実際の高さ(px)
         if (imageControls.classList.contains("image-controls-pin")) {
             pinToggle.innerText = "📌 Unpin Images";
+            document.body.style.paddingBottom = height + 'px';
         }
         else {
             pinToggle.innerText = "📌 Pin Images";
+            document.body.style.paddingBottom = 0 + 'px';
         }
     });
 });
