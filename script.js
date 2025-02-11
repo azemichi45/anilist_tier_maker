@@ -297,7 +297,7 @@ function createTierRow(tierName) {
 }
 async function getSeasonAnimeImageUrl(seasonYear, season, formatType, previous = false) {
     const url = "https://graphql.anilist.co";
-    const episodes_greater = 23
+    const episodes_greater = 23;
     // $マークがqueryのキーとjavascriptの文字列埋め込みでかぶっててわかりにくい
     // {}の手前は文字列埋め込みの記号
     const query = `
@@ -390,7 +390,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
         }
         const previousSeasonAnime = await getSeasonAnimeImageUrl(previousSeasonYear, previousSeason, ["TV", "ONA"], true);
 
-        images = [...images, ...previousSeasonAnime]
+        images = [...images, ...previousSeasonAnime];
 
     }
     Sortable.create(imagePool, {
