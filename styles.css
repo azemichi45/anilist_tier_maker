@@ -18,8 +18,8 @@ body {
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
     min-height: 90px;
-    min-width: 600px;
     position: relative;
 }
 
@@ -166,6 +166,13 @@ body {
 #no-results {
     display: none;
 }
+#include-previous-season {
+    cursor: pointer;
+}
+label[for="include-previous-season"] {
+    cursor: pointer;
+}
+
 /* モーダルのスタイル */
 .modal {
     display: none; /* 初期状態では非表示 */
