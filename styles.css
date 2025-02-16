@@ -4,6 +4,22 @@ body {
     background-color: #f0f0f0;
 }
 
+.language-selector {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-family: sans-serif;
+}
+
+.language-selector label {
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+.language-selector select {
+  padding: 3px 5px;
+  font-size: 1rem;
+}
 .tier-list {
     display: flex;
     flex-direction: column;
@@ -18,8 +34,8 @@ body {
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
     min-height: 90px;
-    min-width: 600px;
     position: relative;
 }
 
@@ -166,6 +182,13 @@ body {
 #no-results {
     display: none;
 }
+#include-previous-season {
+    cursor: pointer;
+}
+label[for="include-previous-season"] {
+    cursor: pointer;
+}
+
 /* モーダルのスタイル */
 .modal {
     display: none; /* 初期状態では非表示 */

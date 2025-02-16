@@ -23,6 +23,22 @@ function initialize() {
             settingsModal.style.display = 'none';
         }
     });
+
+
+    const selectLanguage = document.getElementById("language");
+    const languageSelectedIndex = getCookie("languageSelectedIndex");
+    selectLanguage.selectedIndex = languageSelectedIndex;
+    selectLanguage.addEventListener('change', (e) => {
+
+        const language = e.target.value;
+        setCookie("languageSelectedIndex", e.target.selectedIndex, 365);
+
+        document.querySelectorAll(".tier-item").forEach(item => {
+            item.setAttribute("data-title", item.firstChild.customData.title[language]);
+        });
+
+    });
+
     initTierList();
     initCopyMdButton();
 }
@@ -68,7 +84,7 @@ function initCopyMdButton() {
                 copyMdButton.textContent = "Copied!";
                 copyMdButton.style.backgroundColor = "green";
 
-                // 1秒後に元の状態に戻す
+                // 0.75秒後に元の状態に戻す
                 setTimeout(() => {
                     copyMdButton.textContent = originalText;
                     copyMdButton.style.backgroundColor = originalBackgroundColor;
@@ -79,8 +95,31 @@ function initCopyMdButton() {
             });
     });
 }
+
+// Cookieに値を保存
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + value + "; path=/" + expires;
+}
+
+// Cookieから値を取得
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
 function generateMarkdown(seasonYear, season) {
     const output = {};
+    const language = document.getElementById("language").value.toLowerCase();
     let md = `# ~~~${seasonYear} ${season} Anime Tier List~~~\n`;
 
     // tierlistのデータをobjectに変換
@@ -95,7 +134,7 @@ function generateMarkdown(seasonYear, season) {
         if (output[tier].length === 0) continue;
         md += `## ~~~${tier}~~~\n`;
         for (const data of output[tier]) {
-            md += `[![${data.title}](${data.imgUrl} "${data.title}")](${data.siteUrl})`;
+            md += `[![${data.title[language]}](${data.imgUrl} "${data.title[language]}")](${data.siteUrl})`;
         }
         md += '\n';
     }
@@ -297,7 +336,7 @@ function createTierRow(tierName) {
 }
 async function getSeasonAnimeImageUrl(seasonYear, season, formatType, previous = false) {
     const url = "https://graphql.anilist.co";
-    const episodes_greater = 23
+    const episodes_greater = 23;
     // $マークがqueryのキーとjavascriptの文字列埋め込みでかぶっててわかりにくい
     // {}の手前は文字列埋め込みの記号
     const query = `
@@ -308,7 +347,9 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, previous =
             }
             media(season: $season, seasonYear: $seasonYear, format_in: $format, type: ANIME, ${previous ? ', episodes_greater: $episodes_greater' : ''}) {
                 title {
+                    english
                     romaji
+                    native
                 }
                 coverImage {
                     large
@@ -351,7 +392,7 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, previous =
             .filter(media => media.duration === null || media.duration > 7) // 明確なショートアニメを除外
             .map(media => ({
                 siteUrl: media.siteUrl,
-                title: media.title.romaji,
+                title: media.title,
                 imgUrl: media.coverImage["medium"],
             }));
 
@@ -367,6 +408,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
 
     const seasonYearInput = document.getElementById("seasonYear");
     const seasonSelect = document.getElementById("season");
+    const language = document.getElementById("language").value.toLowerCase();
 
     const optionsArray = Array.from(seasonSelect.options).map(option => option.value);
     const seasonYear = seasonYearInput.value;
@@ -390,12 +432,13 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
         }
         const previousSeasonAnime = await getSeasonAnimeImageUrl(previousSeasonYear, previousSeason, ["TV", "ONA"], true);
 
-        images = [...images, ...previousSeasonAnime]
+        images = [...images, ...previousSeasonAnime];
 
     }
     Sortable.create(imagePool, {
         group: "shared", animation: 150,
     });
+
     imagePool.innerHTML = ""; // Clear existing images
 
     // 結果がなかったときNo Resultsと表示
@@ -410,7 +453,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
         const item = document.createElement("div");
         item.classList.add("tier-item");
         item.setAttribute("draggable", "true");
-        item.setAttribute("data-title", data.title);
+        item.setAttribute("data-title", data.title[language]);
 
         const img = document.createElement("img");
         img.src = data.imgUrl;
@@ -429,15 +472,6 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
 document.addEventListener("DOMContentLoaded", function () {
     initialize();
 
-    // document.querySelector(".download-button").addEventListener("click", () => {
-    //     // html2canvasで指定した要素をキャプチャ
-    //     modernScreenshot.domToPng(document.getElementById("tierlist")).then(dataUrl => {
-    //         const link = document.createElement('a')
-    //         link.download = 'screenshot.png'
-    //         link.href = dataUrl
-    //         link.click()
-    //     })
-    // });
     // Reset Tierlist functionality
     document.getElementById("resetButton").addEventListener("click", resetTierlist);
 
