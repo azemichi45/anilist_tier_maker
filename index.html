@@ -11,8 +11,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
+<header>
+  <h1>Anime Tiermaker</h1>
+  <!-- 言語選択ドロップダウン -->
+  <div class="language-selector">
+    <label for="language">Language: </label>
+    <select id="language">
+      <option value="english">English</option>
+      <option value="romaji">Romaji</option>
+      <option value="native">Native</option>
+    </select>
+  </div>
+</header>
 <body>
-    <h1>Anime Tiermaker</h1>
+    <!-- <h1>Anime Tiermaker</h1> -->
 
     <label for="seasonYear">Year: </label>
     <!-- TODO: とりあえず決め打ちでアニリスのminとmaxを手打ちで年数入れてるけど動的に設定するようにする -->
@@ -32,16 +44,16 @@
         <label for="include-previous-season">Include two-cour anime from the previous season</label>
     </p>
     <!-- 次バージョン用、一旦コメントアウト -->
-    <!-- <label for="format">Format: </label>
-    <select id="format">
-        <option value="TV Show">TV Show</option>
-        <option value="Movie">Movie</option>
-        <option value="TV Short">TV Short</option>
-        <option value="Special">Special</option>
-        <option value="OVA">OVA</option>
-        <option value="ONA">ONA</option>
-        <option value="Music">Music</option>
-    </select> -->
+    <!-- <label for="format">Format: </label> -->
+    <!-- <select id="format"> -->
+    <!--     <option value="TV Show">TV Show</option> -->
+    <!--     <option value="Movie">Movie</option> -->
+    <!--     <option value="TV Short">TV Short</option> -->
+    <!--     <option value="Special">Special</option> -->
+    <!--     <option value="OVA">OVA</option> -->
+    <!--     <option value="ONA">ONA</option> -->
+    <!--     <option value="Music">Music</option> -->
+    <!-- </select> -->
 
 
     <div class="tier-list">
@@ -81,7 +93,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <script src="https://unpkg.com/modern-screenshot"></script>
     <script src="script.js"></script>
 
 </body>
