@@ -80,7 +80,7 @@ function initCopyMdButton() {
         // クリップボードにコピー
         navigator.clipboard.writeText(md)
             .then(() => {
-                // コピー成功時にボタンの状態を更新
+                // コピー成功時に成功を知らせるアニメーションを描画
                 copyMdButton.textContent = "Copied!";
                 copyMdButton.style.backgroundColor = "green";
 
@@ -129,7 +129,7 @@ function generateMarkdown(seasonYear, season) {
         output[tierName] = animes;
     });
 
-    // md作成
+    // markdown作成
     for (const tier in output) {
         if (output[tier].length === 0) continue;
         md += `## ~~~${tier}~~~\n`;
@@ -367,7 +367,7 @@ async function getSeasonAnimeImageUrl(seasonYear, season, formatType, previous =
     let allImages = [];
     let hasNextPage = true;
     let page = 1;
-
+    // 1回当たり50枚までしか取得できないのでそれ以上ある場合は全て取れるまでループを回して取得する
     while (hasNextPage) {
         const response = await fetch(url, {
             method: "POST",
@@ -427,6 +427,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
         const previousSeasonIndex = (seasonIndex - 1 + optionsArray.length) % optionsArray.length;
         const previousSeason = optionsArray[previousSeasonIndex];
         let previousSeasonYear = seasonYear;
+
         if (seasonIndex === 0) {
             previousSeasonYear -= 1;
         }
