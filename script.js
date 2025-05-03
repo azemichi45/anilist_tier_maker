@@ -419,7 +419,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
 
     resetTierlist();
 
-    let images = await getSeasonAnimeImageUrl(seasonYear, season, ["TV", "ONA"]);
+    let images = await getSeasonAnimeImageUrl(seasonYear, season, ["TV", "TV_SHORT", "ONA"]);
 
     // 前記の2クールアニメを含める場合、該当するアニメを追加
     if (includePreviousSeasonCheckBox.checked) {
