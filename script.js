@@ -431,7 +431,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
         if (seasonIndex === 0) {
             previousSeasonYear -= 1;
         }
-        const previousSeasonAnime = await getSeasonAnimeImageUrl(previousSeasonYear, previousSeason, ["TV", "ONA"], true);
+        const previousSeasonAnime = await getSeasonAnimeImageUrl(previousSeasonYear, previousSeason, ["TV", "TV_SHORT", "ONA"], true);
 
         images = [...images, ...previousSeasonAnime];
 
